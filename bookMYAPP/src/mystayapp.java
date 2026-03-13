@@ -1,4 +1,4 @@
-// UC3: Centralized Room Inventory Management
+// UC4: Room Search & Availability Check
 
 import java.util.HashMap;
 
@@ -49,22 +49,11 @@ class RoomInventory {
         inventory = new HashMap<>();
         inventory.put("Single Room", 10);
         inventory.put("Double Room", 5);
-        inventory.put("Suite Room", 2);
+        inventory.put("Suite Room", 0);   // Example unavailable room
     }
 
     int getAvailability(String roomType) {
-        return inventory.get(roomType);
-    }
-
-    void updateAvailability(String roomType, int count) {
-        inventory.put(roomType, count);
-    }
-
-    void displayInventory() {
-        System.out.println("Current Room Availability:");
-        for (String room : inventory.keySet()) {
-            System.out.println(room + " : " + inventory.get(room));
-        }
+        return inventory.getOrDefault(roomType, 0);
     }
 }
 
@@ -72,27 +61,29 @@ public class mystayapp {
 
     public static void main(String[] args) {
 
-        System.out.println("Book My Stay - Hotel Booking System v3.1");
+        System.out.println("Book My Stay - Hotel Booking System v4.1");
         System.out.println("---------------------------------------");
-
-        Room single = new SingleRoom();
-        Room doubleRoom = new DoubleRoom();
-        Room suite = new SuiteRoom();
 
         RoomInventory inventory = new RoomInventory();
 
-        single.displayRoom();
-        System.out.println("Available: " + inventory.getAvailability("Single Room"));
-        System.out.println();
+        Room[] rooms = {
+                new SingleRoom(),
+                new DoubleRoom(),
+                new SuiteRoom()
+        };
 
-        doubleRoom.displayRoom();
-        System.out.println("Available: " + inventory.getAvailability("Double Room"));
-        System.out.println();
+        System.out.println("Available Rooms:");
+        System.out.println("----------------");
 
-        suite.displayRoom();
-        System.out.println("Available: " + inventory.getAvailability("Suite Room"));
-        System.out.println();
+        for (Room room : rooms) {
 
-        inventory.displayInventory();
+            int available = inventory.getAvailability(room.roomType);
+
+            if (available > 0) {   // filter unavailable rooms
+                room.displayRoom();
+                System.out.println("Available: " + available);
+                System.out.println();
+            }
+        }
     }
 }
