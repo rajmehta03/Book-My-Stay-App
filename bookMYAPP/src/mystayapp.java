@@ -1,35 +1,69 @@
-/**
- * Book My Stay - Hotel Booking Management System
- *
- * <p>This class represents the entry point of the Book My Stay application.
- * It demonstrates how a Java application starts execution using the
- * main() method and prints a welcome message to the console.</p>
- *
- * <p>The purpose of this use case is to establish a clear application
- * startup process and introduce fundamental Java concepts such as
- * classes, the main method, console output, and JavaDoc documentation.</p>
- *
- * @author Raj Mehta
- * @version 1.0
- */
+// UC2: Basic Room Types & Static Availability
+
+abstract class Room {
+    String roomType;
+    int beds;
+    int size;
+    double price;
+
+    Room(String roomType, int beds, int size, double price) {
+        this.roomType = roomType;
+        this.beds = beds;
+        this.size = size;
+        this.price = price;
+    }
+
+    void displayRoom() {
+        System.out.println("Room Type: " + roomType);
+        System.out.println("Beds: " + beds);
+        System.out.println("Size: " + size + " sq.ft");
+        System.out.println("Price: $" + price);
+    }
+}
+
+class SingleRoom extends Room {
+    SingleRoom() {
+        super("Single Room", 1, 200, 100);
+    }
+}
+
+class DoubleRoom extends Room {
+    DoubleRoom() {
+        super("Double Room", 2, 350, 180);
+    }
+}
+
+class SuiteRoom extends Room {
+    SuiteRoom() {
+        super("Suite Room", 3, 600, 350);
+    }
+}
+
 public class mystayapp {
 
-    /**
-     * Main method - Entry point of the Java application.
-     * The JVM invokes this method when the program starts.
-     *
-     * @param args Command-line arguments passed to the program
-     */
     public static void main(String[] args) {
 
-        System.out.println("======================================");
-        System.out.println("        Welcome to Book My Stay");
-        System.out.println("     Hotel Booking Management App");
-        System.out.println("            Version: 1.0");
-        System.out.println("======================================");
+        System.out.println("Book My Stay - Hotel Booking System v2.1");
+        System.out.println("---------------------------------------");
 
-        System.out.println("Application started successfully.");
+        Room single = new SingleRoom();
+        Room doubleRoom = new DoubleRoom();
+        Room suite = new SuiteRoom();
 
-        System.out.println("Thank you for using Book My Stay!");
+        // Static availability variables
+        int singleAvailable = 10;
+        int doubleAvailable = 5;
+        int suiteAvailable = 2;
+
+        single.displayRoom();
+        System.out.println("Available: " + singleAvailable);
+        System.out.println();
+
+        doubleRoom.displayRoom();
+        System.out.println("Available: " + doubleAvailable);
+        System.out.println();
+
+        suite.displayRoom();
+        System.out.println("Available: " + suiteAvailable);
     }
 }
