@@ -1,14 +1,19 @@
 import java.util.*;
 
+// Custom Exception
+class InvalidBookingException extends Exception {
+    public InvalidBookingException(String msg) {
+        super(msg);
+    }
+}
+
 // Reservation Class
 class Reservation {
-    private String id;
-    private String guestName;
-    private String roomType;
+    private String id, name, roomType;
 
-    public Reservation(String id, String guestName, String roomType) {
+    public Reservation(String id, String name, String roomType) {
         this.id = id;
-        this.guestName = guestName;
+        this.name = name;
         this.roomType = roomType;
     }
 
@@ -16,7 +21,28 @@ class Reservation {
     public String getRoomType() { return roomType; }
 
     public String toString() {
-        return "ID: " + id + ", Guest: " + guestName + ", Room: " + roomType;
+        return "ID: " + id + ", Name: " + name + ", Room: " + roomType;
+    }
+}
+
+
+class ReservationValidator {
+
+    private static final List<String> validRooms =
+            Arrays.asList("Single", "Double", "Suite");
+
+    public static void validate(String id, String name, String roomType)
+            throws InvalidBookingException {
+
+        if (id == null || id.trim().isEmpty())
+            throw new InvalidBookingException("Reservation ID cannot be empty.");
+
+        if (name == null || name.trim().isEmpty())
+            throw new InvalidBookingException("Guest name cannot be empty.");
+
+        if (!validRooms.contains(roomType))
+            throw new InvalidBookingException(
+                    "Invalid room type! Allowed: " + validRooms);
     }
 }
 
@@ -48,8 +74,8 @@ class BookingReportService {
 
         Map<String, Integer> roomCount = new HashMap<>();
         for (Reservation r : list) {
-            String type = r.getRoomType();
-            roomCount.put(type, roomCount.getOrDefault(type, 0) + 1);
+            roomCount.put(r.getRoomType(),
+                    roomCount.getOrDefault(r.getRoomType(), 0) + 1);
         }
 
         System.out.println("Room Type Summary:");
@@ -115,7 +141,6 @@ public class mystayapp {
         BookingReportService report = new BookingReportService();
         AddOnServiceManager addOnManager = new AddOnServiceManager();
 
-        // Predefined services
         List<AddOnService> services = Arrays.asList(
                 new AddOnService("Breakfast", 500),
                 new AddOnService("Airport Pickup", 1200),
@@ -135,90 +160,113 @@ public class mystayapp {
             System.out.println("6. Exit");
 
             System.out.print("Enter choice: ");
-            int ch = sc.nextInt();
-            sc.nextLine();
 
-            switch (ch) {
+            try {
+                int ch = sc.nextInt();
+                sc.nextLine();
 
-                case 1:
-                    System.out.print("Enter ID: ");
-                    String id = sc.nextLine();
+                switch (ch) {
 
-                    System.out.print("Enter Name: ");
-                    String name = sc.nextLine();
+                    case 1:
+                        System.out.print("Enter ID: ");
+                        String id = sc.nextLine();
 
-                    System.out.print("Enter Room Type: ");
-                    String room = sc.nextLine();
+                        System.out.print("Enter Name: ");
+                        String name = sc.nextLine();
 
-                    Reservation r = new Reservation(id, name, room);
-                    history.addReservation(r);
+                        System.out.print("Enter Room Type (Single/Double/Suite): ");
+                        String room = sc.nextLine();
 
-                    System.out.println("Booking Confirmed!");
-                    break;
+                        // Validation
+                        ReservationValidator.validate(id, name, room);
 
-                case 2:
-                    System.out.print("Enter Reservation ID: ");
-                    String rid = sc.nextLine();
+                        Reservation r = new Reservation(id, name, room);
+                        history.addReservation(r);
 
-                    System.out.println("Available Services:");
-                    for (int i = 0; i < services.size(); i++) {
-                        System.out.println((i + 1) + ". " + services.get(i));
-                    }
+                        System.out.println("Booking Confirmed!");
+                        break;
 
-                    System.out.print("How many services: ");
-                    int n = sc.nextInt();
+                    case 2:
+                        System.out.print("Enter Reservation ID: ");
+                        String rid = sc.nextLine();
 
-                    List<AddOnService> selected = new ArrayList<>();
-                    for (int i = 0; i < n; i++) {
-                        System.out.print("Choose: ");
-                        int s = sc.nextInt();
-                        if (s >= 1 && s <= services.size()) {
-                            selected.add(services.get(s - 1));
+                        System.out.println("Available Services:");
+                        for (int i = 0; i < services.size(); i++) {
+                            System.out.println((i + 1) + ". " + services.get(i));
                         }
-                    }
 
-                    addOnManager.addServices(rid, selected);
-                    System.out.println("Services Added!");
-                    sc.nextLine();
-                    break;
+                        System.out.print("How many services: ");
+                        int n = sc.nextInt();
 
-                case 3:
-                    System.out.print("Enter Reservation ID: ");
-                    String vid = sc.nextLine();
+                        List<AddOnService> selected = new ArrayList<>();
+                        for (int i = 0; i < n; i++) {
+                            System.out.print("Choose: ");
+                            int s = sc.nextInt();
 
-                    List<AddOnService> list = addOnManager.getServices(vid);
-                    if (list.isEmpty()) {
-                        System.out.println("No services found.");
-                    } else {
-                        for (AddOnService s : list) {
-                            System.out.println(s);
+                            if (s >= 1 && s <= services.size()) {
+                                selected.add(services.get(s - 1));
+                            } else {
+                                System.out.println("Invalid service choice!");
+                            }
                         }
-                        System.out.println("Total Cost: ₹" + addOnManager.getTotalCost(vid));
-                    }
-                    break;
 
-                case 4:
-                    List<Reservation> all = history.getAllReservations();
-                    if (all.isEmpty()) {
-                        System.out.println("No bookings.");
-                    } else {
-                        for (Reservation res : all) {
-                            System.out.println(res);
+                        addOnManager.addServices(rid, selected);
+                        System.out.println("Services Added!");
+                        sc.nextLine();
+                        break;
+
+                    case 3:
+                        System.out.print("Enter Reservation ID: ");
+                        String vid = sc.nextLine();
+
+                        List<AddOnService> list = addOnManager.getServices(vid);
+                        if (list.isEmpty()) {
+                            System.out.println("No services found.");
+                        } else {
+                            for (AddOnService s : list) {
+                                System.out.println(s);
+                            }
+                            System.out.println("Total Cost: ₹" +
+                                    addOnManager.getTotalCost(vid));
                         }
-                    }
-                    break;
+                        break;
 
-                case 5:
-                    report.generateReport(history);
-                    break;
+                    case 4:
+                        List<Reservation> all = history.getAllReservations();
+                        if (all.isEmpty()) {
+                            System.out.println("No bookings.");
+                        } else {
+                            for (Reservation res : all) {
+                                System.out.println(res);
+                            }
+                        }
+                        break;
 
-                case 6:
-                    System.out.println("Thank you!");
-                    sc.close();
-                    return;
+                    case 5:
+                        report.generateReport(history);
+                        break;
 
-                default:
-                    System.out.println("Invalid choice!");
+                    case 6:
+                        System.out.println("Thank you!");
+                        sc.close();
+                        return;
+
+                    default:
+                        System.out.println("Invalid choice!");
+                }
+
+            } catch (InvalidBookingException e) {
+                // Custom validation error
+                System.out.println("Error: " + e.getMessage());
+
+            } catch (InputMismatchException e) {
+                //  Wrong input type
+                System.out.println("Invalid input! Please enter correct data.");
+                sc.nextLine(); // clear buffer
+
+            } catch (Exception e) {
+                //  Safety net
+                System.out.println("Unexpected error occurred.");
             }
         }
     }
